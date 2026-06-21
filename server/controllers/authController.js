@@ -6,7 +6,7 @@ const path = require("path");
 
 const generateAvatarDataUrl = (name) => {
   const letter = (name || "?").trim().charAt(0).toUpperCase();
-  const bg = "%23a78bfa"; // purple-400 hex (escaped # as %23 for URL encoding)
+  const bg = "%23a78bfa";
   const fg = "%23ffffff";
   const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='256' height='256' viewBox='0 0 256 256'><rect width='100%' height='100%' fill='${bg}'/><text x='50%' y='50%' dy='0.35em' text-anchor='middle' font-family='Inter, Roboto, Arial, sans-serif' font-size='110' fill='${fg}'>${letter}</text></svg>`;
   const base64 = Buffer.from(svg).toString("base64");
@@ -51,7 +51,6 @@ exports.register = async (req, res) => {
       ],
     );
     const user = result.rows[0];
-    // автоматически логиним (выдаём токен)
     const token = jwt.sign(
       { id: user.id, email: user.email, role: user.role },
       process.env.JWT_SECRET,
@@ -145,10 +144,8 @@ exports.uploadAvatar = async (req, res) => {
     const safeName = `${Date.now()}_${filename.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
     const filePath = path.join(uploadDir, safeName);
 
-    // strip data url prefix if present
     const base64 = data.replace(/^data:.*;base64,/, "");
-    // simple size guard: base64 length roughly 4/3 of binary
-    const maxBase64Length = 6 * 1024 * 1024; // ~6MB base64 (~4.5MB binary)
+    const maxBase64Length = 6 * 1024 * 1024;
     if (base64.length > maxBase64Length) {
       return res
         .status(413)
@@ -157,7 +154,6 @@ exports.uploadAvatar = async (req, res) => {
 
     const buffer = Buffer.from(base64, "base64");
 
-    // detect mime type from data prefix if present
     const mimeMatch = (data.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,/) ||
       [])[1];
     const allowed = [
@@ -171,7 +167,6 @@ exports.uploadAvatar = async (req, res) => {
       return res.status(415).json({ message: "Неподдерживаемый тип файла" });
     }
 
-    // Try to optimize/resize image if sharp is available
     let finalName = safeName;
     try {
       let sharp;
@@ -182,7 +177,6 @@ exports.uploadAvatar = async (req, res) => {
       }
 
       if (sharp) {
-        // determine output extension
         const outName = safeName.replace(/\.[^.]+$/, "") + ".webp";
         const outPath = path.join(uploadDir, outName);
         await sharp(buffer)
@@ -191,12 +185,10 @@ exports.uploadAvatar = async (req, res) => {
           .toFile(outPath);
         finalName = outName;
       } else {
-        // fallback: write original buffer
         fs.writeFileSync(filePath, buffer);
       }
     } catch (e) {
       console.error("Image processing failed, saving original:", e);
-      // attempt to save original if processing fails
       try {
         fs.writeFileSync(filePath, buffer);
       } catch (writeErr) {

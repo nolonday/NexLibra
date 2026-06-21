@@ -99,7 +99,6 @@ exports.updateReservationStatus = async (req, res) => {
         id,
       ]);
 
-      // Update book status accordingly
       if (status === "Выдана" && oldStatus === "Активно") {
         await client.query("UPDATE books SET status = 'Выдана' WHERE id = $1", [
           bookId,

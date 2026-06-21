@@ -47,7 +47,6 @@ exports.getBooks = async (req, res) => {
       paramIndex++;
     }
 
-    // Sorting
     let orderClause = " ORDER BY id DESC";
     if (sort === "popular") orderClause = " ORDER BY popularity DESC";
     if (sort === "alpha") orderClause = " ORDER BY title ASC";
@@ -63,7 +62,6 @@ exports.getBooks = async (req, res) => {
     params.push(limit, offset);
 
     const result = await pool.query(query, params);
-    // normalize gallery_urls: if cover_url is a JSON array string, parse it, otherwise expose single cover
     const books = result.rows.map((b) => {
       let gallery = [];
       try {
@@ -73,7 +71,6 @@ exports.getBooks = async (req, res) => {
           else gallery = [String(b.cover_url)];
         }
       } catch (e) {
-        // not JSON, treat as single url
         if (b.cover_url) gallery = [b.cover_url];
       }
       return { ...b, gallery_urls: gallery };
@@ -141,7 +138,6 @@ exports.getGenres = async (req, res) => {
 };
 
 exports.updateBook = async (req, res) => {
-  // admin only, handled in route
   try {
     const { id } = req.params;
     const {
@@ -183,7 +179,6 @@ exports.updateBook = async (req, res) => {
       fields.push(`cover_url = $${idx++}`);
       values.push(cover_url);
     }
-    // accept gallery_urls array and store as JSON string in cover_url if provided
     if (req.body.gallery_urls !== undefined) {
       fields.push(`cover_url = $${idx++}`);
       values.push(JSON.stringify(req.body.gallery_urls || []));
@@ -233,7 +228,6 @@ exports.createBook = async (req, res) => {
     if (!title || !author) {
       return res.status(400).json({ message: "Название и автор обязательны" });
     }
-    // allow gallery_urls array in request -> store as JSON string into cover_url
     const finalCover = req.body.gallery_urls
       ? JSON.stringify(req.body.gallery_urls)
       : cover_url;

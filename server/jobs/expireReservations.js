@@ -30,9 +30,7 @@ async function expireReservations() {
   }
 }
 
-// Run periodically. Interval can be configured via EXPIRE_JOB_INTERVAL_MS env var (defaults to 60000ms)
 const interval = parseInt(process.env.EXPIRE_JOB_INTERVAL_MS || "60000", 10);
 setInterval(expireReservations, interval);
 
-// Export for manual triggering/tests
 module.exports = expireReservations;

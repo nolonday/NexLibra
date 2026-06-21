@@ -7,7 +7,6 @@ exports.createReservation = async (req, res) => {
     const { bookId } = req.body;
     const userId = req.user.id;
 
-    // Check active reservations limit (max 3)
     const activeRes = await client.query(
       "SELECT COUNT(*) FROM reservations WHERE user_id = $1 AND status = 'Активно'",
       [userId],
@@ -19,7 +18,6 @@ exports.createReservation = async (req, res) => {
         .json({ message: "Нельзя забронировать больше 3 книг одновременно" });
     }
 
-    // Check book availability
     const book = await client.query(
       "SELECT * FROM books WHERE id = $1 FOR UPDATE",
       [bookId],
@@ -35,13 +33,11 @@ exports.createReservation = async (req, res) => {
         .json({ message: "Книга недоступна для бронирования" });
     }
 
-    // Create reservation
     const reservation = await client.query(
       "INSERT INTO reservations (user_id, book_id, status, expires_at) VALUES ($1, $2, 'Активно', NOW() + INTERVAL '3 days') RETURNING *",
       [userId, bookId],
     );
 
-    // Update book status
     await client.query(
       "UPDATE books SET status = 'Забронирована' WHERE id = $1",
       [bookId],
@@ -78,12 +74,10 @@ exports.cancelReservation = async (req, res) => {
       return res.status(400).json({ message: "Бронирование не активно" });
     }
 
-    // Cancel reservation
     await client.query(
       "UPDATE reservations SET status = 'Отменена' WHERE id = $1",
       [id],
     );
-    // Return book to available status
     await client.query("UPDATE books SET status = 'В наличии' WHERE id = $1", [
       reservation.rows[0].book_id,
     ]);

@@ -15,18 +15,15 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-// Serve uploaded files
 const uploadsDir = path.join(__dirname, "public", "uploads");
 fs.mkdirSync(uploadsDir, { recursive: true });
 app.use("/uploads", express.static(uploadsDir));
 
-// Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/books", booksRoutes);
 app.use("/api/reservations", reservationsRoutes);
 app.use("/api/admin", adminRoutes);
 
-// start background jobs
 try {
   require("./jobs/expireReservations");
 } catch (e) {

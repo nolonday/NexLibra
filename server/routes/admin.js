@@ -2,7 +2,7 @@ const router = require("express").Router();
 const adminController = require("../controllers/adminController");
 const authMiddleware = require("../middleware/auth");
 const { adminOnly, staffOnly } = require("../middleware/auth");
-const booksController = require("../controllers/booksController"); // for updateBook
+const booksController = require("../controllers/booksController");
 
 router.get("/users", authMiddleware, adminOnly, adminController.getAllUsers);
 router.put(
