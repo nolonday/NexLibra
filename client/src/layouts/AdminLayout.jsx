@@ -1,4 +1,4 @@
-import { Outlet, Link, useNavigate } from "react-router-dom";
+import { Outlet, Link, useNavigate } from "react-router";
 import { useAuth } from "../hooks/useAuth";
 import { useState } from "react";
 import { useTheme } from "../context/ThemeContext";
@@ -90,7 +90,9 @@ const AdminLayout = () => {
             N
           </div>
           <div className="flex-1 min-w-0">
-            <div className="font-bold text-gray-800 dark:text-gray-100">NexLibra</div>
+            <div className="font-bold text-gray-800 dark:text-gray-100">
+              NexLibra
+            </div>
             <div className="text-xs text-gray-500">Панель управления</div>
           </div>
           {open && (
@@ -135,7 +137,11 @@ const AdminLayout = () => {
             </svg>
             Книги
           </Link>
-          <Link to="/admin/reservations" onClick={closeMenu} className={navLinkClass}>
+          <Link
+            to="/admin/reservations"
+            onClick={closeMenu}
+            className={navLinkClass}
+          >
             <svg
               className="w-5 h-5 text-purple-600"
               viewBox="0 0 24 24"
@@ -162,7 +168,11 @@ const AdminLayout = () => {
             Бронирования
           </Link>
           {user?.role === "Администратор" && (
-            <Link to="/admin/users" onClick={closeMenu} className={navLinkClass}>
+            <Link
+              to="/admin/users"
+              onClick={closeMenu}
+              className={navLinkClass}
+            >
               <svg
                 className="w-5 h-5 text-purple-600"
                 viewBox="0 0 24 24"

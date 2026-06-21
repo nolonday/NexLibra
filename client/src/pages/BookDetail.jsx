@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useParams, useNavigate } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router";
 import { getBookById, createReservation } from "../api/localApi";
 import { useAuth } from "../hooks/useAuth";
 import Modal from "../components/Modal";

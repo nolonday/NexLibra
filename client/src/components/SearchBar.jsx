@@ -5,12 +5,11 @@ const SearchBar = ({
   onOpenFilters,
   filtersOpen,
   activeCount = 0,
-  value, // controlled value from parent
-  onChange, // controlled change handler
+  value,
+  onChange,
 }) => {
   const [localQuery, setLocalQuery] = useState("");
 
-  // keep local state in sync if parent controls value
   const effectiveValue = value !== undefined ? value : localQuery;
 
   const handleInput = (v) => {

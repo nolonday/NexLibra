@@ -12,7 +12,7 @@ import Dashboard from "./pages/admin/Dashboard";
 import BooksManager from "./pages/admin/BooksManager";
 import UsersManager from "./pages/admin/UsersManager";
 import ProtectedRoute from "./components/ProtectedRoute";
-import ReservationsManager from "./pages/admin/ReservationsManager"; // <-- добавить
+import ReservationsManager from "./pages/admin/ReservationsManager";
 
 function App() {
   return (

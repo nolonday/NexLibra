@@ -1,9 +1,7 @@
-import api from "./axios"; // используем твой настроенный инстанс
+import api from "./axios";
 
-// ================== АУТЕНТИФИКАЦИЯ ==================
 export const login = async (email, password) => {
   const { data } = await api.post("/auth/login", { email, password });
-  // data = { token, user: { id, email, role, name, phone } }
   return data;
 };
 
@@ -23,7 +21,6 @@ export const register = async (
     address,
     photo_url,
   });
-  // data = { token, user: { id, email, role, name, phone, address, photo_url } }
   return data;
 };
 
@@ -34,17 +31,14 @@ export const uploadAvatar = async (filename, dataUrl) => {
 
 export const updateProfile = async (updates) => {
   const { data } = await api.put(`/auth/me`, updates);
-  return data; // updated user
-};
-
-// Получение текущего пользователя по токену (для восстановления сессии)
-export const getMe = async () => {
-  const { data } = await api.get("/auth/me");
-  // data = { id, email, role, name, phone }
   return data;
 };
 
-// ================== КНИГИ (публичные) ==================
+export const getMe = async () => {
+  const { data } = await api.get("/auth/me");
+  return data;
+};
+
 export const getBooks = async ({
   page = 1,
   limit = 16,
@@ -60,7 +54,6 @@ export const getBooks = async ({
   if (yearTo !== undefined) params.year_to = yearTo;
   if (status !== undefined) params.status = status;
   const { data } = await api.get("/books", { params });
-  // data = { books: [...], totalPages, page, totalItems }
   return data;
 };
 
@@ -71,14 +64,12 @@ export const getBookById = async (id) => {
 
 export const getGenres = async () => {
   const { data } = await api.get("/books/genres");
-  // data = { genres: [...] }
   return data.genres;
 };
 
-// ================== БРОНИРОВАНИЯ (защищённые) ==================
 export const createReservation = async (userId, bookId) => {
   const { data } = await api.post("/reservations", { bookId });
-  return data; // объект бронирования
+  return data;
 };
 
 export const cancelReservation = async (reservationId) => {
@@ -87,15 +78,14 @@ export const cancelReservation = async (reservationId) => {
 
 export const getActiveReservations = async (userId) => {
   const { data } = await api.get("/reservations/active");
-  return data; // массив
+  return data;
 };
 
 export const getReservationHistory = async (userId) => {
   const { data } = await api.get("/reservations/history");
-  return data; // массив
+  return data;
 };
 
-// ================== АДМИН / БИБЛИОТЕКАРЬ ==================
 export const updateBook = async (id, updates) => {
   const { data } = await api.put(`/admin/books/${id}`, updates);
   return data;
@@ -107,7 +97,7 @@ export const createBook = async (payload) => {
 
 export const getAllUsers = async () => {
   const { data } = await api.get("/admin/users");
-  return data; // массив пользователей
+  return data;
 };
 
 export const updateUserRole = async (userId, newRole) => {

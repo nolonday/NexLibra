@@ -30,7 +30,6 @@ const FilterModal = ({
     const onKey = (e) => {
       if (e.key === "Escape") onClose();
       if (e.key === "Tab") {
-        // focus trap
         const el = panelRef.current;
         if (!el) return;
         const focusable = el.querySelectorAll(
@@ -53,7 +52,6 @@ const FilterModal = ({
       }
     };
     document.addEventListener("keydown", onKey);
-    // focus first control inside panel
     setTimeout(() => {
       const el = panelRef.current;
       const focusable = el?.querySelectorAll(
@@ -64,7 +62,6 @@ const FilterModal = ({
     return () => document.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
-  // Desktop: render as a static sidebar panel (if desktopVisible)
   const panelClass = `w-full md:w-72 rounded-2xl shadow-lg p-4 border ${
     theme === "dark"
       ? "bg-gradient-to-b from-gray-900/85 to-gray-800/70 border-gray-700 text-gray-100"
@@ -235,13 +232,10 @@ const FilterModal = ({
     </div>
   );
 
-  // If desktopVisible, render panel inline for md+ screens; for mobile, render as slide-over when open
   return (
     <>
-      {/* Desktop static pane: always visible on md */}
       <div className="hidden md:block">{Panel}</div>
 
-      {/* Mobile slide-over */}
       {open && (
         <div className="fixed inset-0 z-50 md:hidden">
           <div
@@ -250,9 +244,7 @@ const FilterModal = ({
             aria-hidden
           />
           <div className="absolute right-0 top-0 bottom-0 w-[min(90vw,24rem)] p-3 sm:p-4 overflow-y-auto">
-            <div className="min-h-full flex flex-col">
-              {Panel}
-            </div>
+            <div className="min-h-full flex flex-col">{Panel}</div>
           </div>
         </div>
       )}

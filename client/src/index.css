@@ -10,7 +10,6 @@ body {
   overflow-x: clip;
 }
 
-/* Glass card style */
 .glass {
   background: rgba(255, 255, 255, 0.6);
   backdrop-filter: blur(12px);
@@ -33,7 +32,6 @@ body {
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
 }
 
-/* Smooth gradient text */
 .gradient-text {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   -webkit-background-clip: text;
@@ -41,7 +39,6 @@ body {
   background-clip: text;
 }
 
-/* Fade-in animation */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -57,7 +54,6 @@ body {
   animation: fadeIn 0.6s ease forwards;
 }
 
-/* Utility: two-line clamp with ellipsis (fallback if Tailwind line-clamp plugin is not enabled) */
 .line-clamp-2 {
   display: -webkit-box !important;
   -webkit-line-clamp: 2 !important;
@@ -65,11 +61,9 @@ body {
   overflow: hidden !important;
   text-overflow: ellipsis !important;
   white-space: normal !important;
-  /* set a safe max-height to prevent layout growth (2 lines * approx line-height) */
   max-height: calc(2 * 1.15em) !important;
 }
 
-/* Dark-mode minimal overrides to enable theme toggle without changing original layout */
 .dark body {
   background: linear-gradient(135deg, #081226 0%, #0b1530 100%);
   color: #e6eef8;
@@ -97,7 +91,6 @@ body {
   color: #e6eef8;
 }
 
-/* hide scrollbar for carousels */
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }
@@ -106,7 +99,6 @@ body {
   scrollbar-width: none;
 }
 
-/* slider item sizing for Home carousel */
 .slide-item {
   min-width: min(85vw, 220px);
   flex-shrink: 0;
@@ -133,8 +125,6 @@ body {
   color: #9fb0c8;
 }
 
-/* Broader dark-mode overrides for common utility classes used in components */
-/* Override Tailwind utility classes where needed (use !important to win specificity) */
 .dark .text-gray-700 {
   color: #d6e6fb !important;
 }
@@ -145,7 +135,6 @@ body {
   color: #ffffff !important;
 }
 
-/* background whites and translucent whites */
 .dark .bg-white {
   background-color: rgba(255, 255, 255, 0.03) !important;
 }
@@ -168,7 +157,6 @@ body {
   background-color: rgba(255, 255, 255, 0.07) !important;
 }
 
-/* borders */
 .dark .border-gray-100 {
   border-color: rgba(255, 255, 255, 0.04) !important;
 }
@@ -179,7 +167,6 @@ body {
   border-color: rgba(255, 255, 255, 0.04) !important;
 }
 
-/* purple primary buttons - make a bit richer on dark background */
 .dark .bg-purple-600 {
   background-color: #6b21a8 !important;
 }
@@ -190,7 +177,6 @@ body {
   box-shadow: 0 6px 18px rgba(107, 33, 168, 0.12) !important;
 }
 
-/* linear gradient background helper - dark variant */
 .dark .bg-linear-to-br.from-purple-100.to-blue-100,
 .dark .bg-linear-to-br.from-indigo-500\.via-purple-500\.to-pink-400 {
   background-image: linear-gradient(
@@ -200,7 +186,6 @@ body {
   ) !important;
 }
 
-/* inputs / cards / modals */
 .dark input,
 .dark textarea,
 .dark select {
@@ -212,7 +197,6 @@ body {
   background-color: rgba(107, 33, 168, 0.06) !important;
 }
 
-/* container/header/footer */
 .dark header {
   background-color: rgba(6, 10, 20, 0.6);
 }
@@ -221,7 +205,6 @@ body {
   color: #9fb0c8;
 }
 
-/* tables and lists */
 .dark th {
   color: #9fb0c8 !important;
 }
@@ -229,14 +212,11 @@ body {
   color: #d6e6fb !important;
 }
 
-/* ensure gradient-text still visible */
 .dark .gradient-text {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-/* Admin layout specific fixes */
-/* page background */
 .dark .bg-gray-50 {
   background-color: #071226 !important;
 }
@@ -244,7 +224,6 @@ body {
   background-color: #071226 !important;
 }
 
-/* sidebar */
 .dark aside {
   background-color: rgba(8, 12, 20, 0.9) !important;
 }
@@ -265,7 +244,6 @@ body {
   color: #d6bcfa !important;
 }
 
-/* mobile topbar */
 .dark .md\:hidden.fixed.top-0.left-0.right-0.z-30.bg-white {
   background-color: rgba(8, 12, 20, 0.9) !important;
   border-bottom-color: rgba(255, 255, 255, 0.03) !important;
@@ -274,7 +252,6 @@ body {
   color: #e6eef8 !important;
 }
 
-/* links and badges inside admin */
 .dark .bg-purple-100 {
   background-color: rgba(107, 33, 168, 0.08) !important;
 }
@@ -282,14 +259,12 @@ body {
   color: #d6bcfa !important;
 }
 
-/* hover purple50 utility */
 .dark .hover\:bg-purple-50:hover {
   background-color: rgba(107, 33, 168, 0.06) !important;
 }
 
-/* Primary action (registration) tweaks for dark theme */
 .dark .bg-purple-600 {
-  background-color: #7c3aed !important; /* slightly brighter purple */
+  background-color: #7c3aed !important;
   color: #fff !important;
   border: 1px solid rgba(255, 255, 255, 0.04) !important;
 }
@@ -300,7 +275,6 @@ body {
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.55) !important;
 }
 
-/* Make white buttons subtle on dark bg, but keep purple text visible */
 .dark .bg-white {
   background-color: rgba(255, 255, 255, 0.03) !important;
   color: #e6eef8 !important;
@@ -309,7 +283,6 @@ body {
   color: #d6bcfa !important;
 }
 
-/* Specific for small white secondary buttons (like 'Удалить') */
 .dark .px-3.py-1.rounded-full.bg-white {
   background-color: rgba(255, 255, 255, 0.04) !important;
   border-color: rgba(255, 255, 255, 0.06) !important;

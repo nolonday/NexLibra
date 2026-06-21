@@ -7,7 +7,6 @@ const UsersManager = () => {
   const initialDataUrl = (name, bg = "#7c3aed") => {
     const letter = (name || "?").trim().charAt(0).toUpperCase();
     const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='128' height='128'><rect width='100%' height='100%' fill='${bg}'/><text x='50%' y='50%' dy='0.35em' text-anchor='middle' font-family='Inter, Roboto, Arial, sans-serif' font-size='60' fill='#ffffff'>${letter}</text></svg>`;
-    // btoa throws on non-latin chars; use encodeURIComponent workaround
     const encoded =
       typeof window !== "undefined"
         ? window.btoa(unescape(encodeURIComponent(svg)))
@@ -82,7 +81,9 @@ const UsersManager = () => {
                   <div className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
                     {u.name}
                   </div>
-                  <div className="text-xs text-gray-500 truncate">{u.email}</div>
+                  <div className="text-xs text-gray-500 truncate">
+                    {u.email}
+                  </div>
                   <div className="text-xs text-gray-500 mt-1">
                     {u.phone || "—"}
                   </div>

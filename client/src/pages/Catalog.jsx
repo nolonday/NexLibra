@@ -50,20 +50,16 @@ const Catalog = () => {
 
   useEffect(() => {
     getGenres().then(setGenresList);
-    // get years range
     api.get("/books/years").then((r) => {
       const min = r.data.minYear;
       const max = r.data.maxYear;
       setYearsRange({ min, max });
-      // default to requested 1866..1966 but clamp to available range
       const defaultFrom = Math.max(min || 1900, 1866);
       const defaultTo = Math.min(max || new Date().getFullYear(), 1966);
       setYearFrom(defaultFrom);
       setYearTo(defaultTo);
     });
   }, []);
-
-  // handleSearch removed — SearchBar onSearch is handled inline
 
   const resetFilters = () => {
     setSearch("");

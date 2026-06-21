@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { register, uploadAvatar } from "../api/localApi";
 import { useAuth } from "../hooks/useAuth";
 
@@ -22,7 +22,6 @@ const Register = () => {
     try {
       let avatarUrl = photoUrl;
       if (photoFile) {
-        // read file as data URL
         const dataUrl = await new Promise((res, rej) => {
           const reader = new FileReader();
           reader.onload = () => res(reader.result);

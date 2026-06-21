@@ -47,7 +47,6 @@ const Home = () => {
         <div className="absolute bottom-0 left-0 w-48 h-48 bg-pink-300/30 rounded-full blur-3xl translate-y-10 -translate-x-10"></div>
       </section>
 
-      {/* Popular books - slider */}
       <section>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <h2 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-100">
