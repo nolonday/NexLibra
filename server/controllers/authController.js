@@ -138,12 +138,6 @@ exports.uploadAvatar = async (req, res) => {
     if (!filename || !data)
       return res.status(400).json({ message: "filename and data required" });
 
-    const uploadDir = path.join(__dirname, "..", "public", "uploads");
-    fs.mkdirSync(uploadDir, { recursive: true });
-
-    const safeName = `${Date.now()}_${filename.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
-    const filePath = path.join(uploadDir, safeName);
-
     const base64 = data.replace(/^data:.*;base64,/, "");
     const maxBase64Length = 6 * 1024 * 1024;
     if (base64.length > maxBase64Length) {
@@ -167,7 +161,7 @@ exports.uploadAvatar = async (req, res) => {
       return res.status(415).json({ message: "Неподдерживаемый тип файла" });
     }
 
-    let finalName = safeName;
+    let processedBuffer = buffer;
     try {
       let sharp;
       try {
@@ -175,30 +169,41 @@ exports.uploadAvatar = async (req, res) => {
       } catch (e) {
         sharp = null;
       }
-
       if (sharp) {
-        const outName = safeName.replace(/\.[^.]+$/, "") + ".webp";
-        const outPath = path.join(uploadDir, outName);
-        await sharp(buffer)
+        processedBuffer = await sharp(buffer)
           .resize({ width: 1400, withoutEnlargement: true })
           .webp({ quality: 80 })
-          .toFile(outPath);
-        finalName = outName;
-      } else {
-        fs.writeFileSync(filePath, buffer);
+          .toBuffer();
       }
     } catch (e) {
-      console.error("Image processing failed, saving original:", e);
-      try {
-        fs.writeFileSync(filePath, buffer);
-      } catch (writeErr) {
-        console.error("Failed to save uploaded file:", writeErr);
-        return res.status(500).json({ message: "Не удалось сохранить файл" });
-      }
+      console.warn("Image processing failed, uploading original:", e);
+      processedBuffer = buffer;
     }
 
-    const url = `${req.protocol}://${req.get("host")}/uploads/${finalName}`;
-    res.json({ url });
+    const cloudinary = require("cloudinary").v2;
+    cloudinary.config({
+      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+      api_key: process.env.CLOUDINARY_API_KEY,
+      api_secret: process.env.CLOUDINARY_API_SECRET,
+    });
+    const streamifier = require("streamifier");
+
+    const streamUpload = (buffer) => {
+      return new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { folder: "nexlibra/avatars" },
+          (error, result) => {
+            if (result) resolve(result);
+            else reject(error);
+          },
+        );
+        streamifier.createReadStream(buffer).pipe(stream);
+      });
+    };
+
+    const result = await streamUpload(processedBuffer);
+
+    return res.json({ url: result.secure_url, public_id: result.public_id });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Ошибка при загрузке файла" });

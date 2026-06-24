@@ -251,3 +251,17 @@ exports.createBook = async (req, res) => {
     res.status(500).json({ message: "Ошибка сервера" });
   }
 };
+
+exports.deleteBook = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await pool.query("DELETE FROM books WHERE id = $1 RETURNING *", [id]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "Книга не найдена" });
+    }
+    res.json({ message: "Книга удалена", book: result.rows[0] });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Ошибка сервера" });
+  }
+};

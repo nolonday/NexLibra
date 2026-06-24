@@ -73,6 +73,56 @@ exports.getAllReservations = async (req, res) => {
   }
 };
 
+exports.createReservationForUser = async (req, res) => {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const { userId, bookId } = req.body;
+    if (!userId || !bookId) return res.status(400).json({ message: 'userId and bookId required' });
+
+    const activeRes = await client.query(
+      "SELECT COUNT(*) FROM reservations WHERE user_id = $1 AND status = 'Активно'",
+      [userId],
+    );
+    if (parseInt(activeRes.rows[0].count) >= 3) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ message: 'Нельзя забронировать больше 3 книг одновременно' });
+    }
+
+    const book = await client.query(
+      'SELECT * FROM books WHERE id = $1 FOR UPDATE',
+      [bookId],
+    );
+    if (book.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ message: 'Книга не найдена' });
+    }
+    if (book.rows[0].status !== 'В наличии') {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ message: 'Книга недоступна для бронирования' });
+    }
+
+    const reservation = await client.query(
+      "INSERT INTO reservations (user_id, book_id, status, expires_at) VALUES ($1, $2, 'Активно', NOW() + INTERVAL '3 days') RETURNING *",
+      [userId, bookId],
+    );
+
+    await client.query(
+      "UPDATE books SET status = 'Забронирована' WHERE id = $1",
+      [bookId],
+    );
+
+    await client.query('COMMIT');
+    res.status(201).json(reservation.rows[0]);
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error(err);
+    res.status(500).json({ message: 'Ошибка сервера' });
+  } finally {
+    client.release();
+  }
+};
+
 exports.updateReservationStatus = async (req, res) => {
   try {
     const { id } = req.params;
@@ -123,6 +173,20 @@ exports.updateReservationStatus = async (req, res) => {
     } finally {
       client.release();
     }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Ошибка сервера" });
+  }
+};
+
+exports.deleteUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await pool.query("DELETE FROM users WHERE id = $1 RETURNING id, email, name", [id]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "Пользователь не найден" });
+    }
+    res.json({ message: "Пользователь удалён", user: result.rows[0] });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Ошибка сервера" });

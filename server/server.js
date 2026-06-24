@@ -8,21 +8,21 @@ const authRoutes = require("./routes/auth");
 const booksRoutes = require("./routes/books");
 const reservationsRoutes = require("./routes/reservations");
 const adminRoutes = require("./routes/admin");
+const uploadsRoutes = require("./routes/uploads");
+const coversRoutes = require("./routes/covers");
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
-
-const uploadsDir = path.join(__dirname, "public", "uploads");
-fs.mkdirSync(uploadsDir, { recursive: true });
-app.use("/uploads", express.static(uploadsDir));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/books", booksRoutes);
 app.use("/api/reservations", reservationsRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/uploads", uploadsRoutes);
+app.use("/api/covers", coversRoutes);
 
 try {
   require("./jobs/expireReservations");

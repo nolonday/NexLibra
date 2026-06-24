@@ -12,12 +12,19 @@ router.put(
   adminController.updateUserRole,
 );
 router.put("/users/:id", authMiddleware, adminOnly, adminController.updateUser);
+router.delete("/users/:id", authMiddleware, adminOnly, adminController.deleteUser);
 
 router.get(
   "/reservations",
   authMiddleware,
   staffOnly,
   adminController.getAllReservations,
+);
+router.post(
+  "/reservations",
+  authMiddleware,
+  staffOnly,
+  adminController.createReservationForUser,
 );
 router.put(
   "/reservations/:id",
@@ -28,4 +35,5 @@ router.put(
 
 router.put("/books/:id", authMiddleware, staffOnly, booksController.updateBook);
 router.post("/books", authMiddleware, staffOnly, booksController.createBook);
+router.delete("/books/:id", authMiddleware, adminOnly, booksController.deleteBook);
 module.exports = router;
