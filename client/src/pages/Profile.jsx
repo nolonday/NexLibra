@@ -6,6 +6,7 @@ import {
 } from "../api/localApi";
 import { useAuth } from "../hooks/useAuth";
 import { uploadAvatar, updateProfile } from "../api/localApi";
+import Spinner from "../components/Spinner";
 
 const Profile = () => {
   const { user } = useAuth();
@@ -14,6 +15,7 @@ const Profile = () => {
   const { updateUser } = useAuth();
 
   const [editing, setEditing] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     name: "",
     phone: "",
@@ -29,12 +31,16 @@ const Profile = () => {
     getReservationHistory(user.id).then(setHistory);
   };
 
-  useEffect(() => {
-    if (user) loadData();
-  }, [user]);
+  const formatDate = (val) => {
+    if (!val) return "—";
+    const d = new Date(val);
+    if (isNaN(d)) return "—";
+    return d.toLocaleDateString();
+  };
 
   useEffect(() => {
     if (user) {
+      loadData();
       setForm({
         name: user.name || "",
         phone: user.phone || "",
@@ -51,32 +57,35 @@ const Profile = () => {
 
   const startEdit = () => setEditing(true);
 
-  const handleSave = async () => {
-    try {
-      let photo_url = form.photo_url;
-      if (photoFile) {
-        const dataUrl = await new Promise((res, rej) => {
-          const reader = new FileReader();
-          reader.onload = () => res(reader.result);
-          reader.onerror = rej;
-          reader.readAsDataURL(photoFile);
-        });
-        const uploadRes = await uploadAvatar(photoFile.name, dataUrl);
-        photo_url = uploadRes.url;
-      }
-      const updated = await updateProfile({
-        name: form.name,
-        phone: form.phone,
-        address: form.address,
-        photo_url,
-      });
-      updateUser(updated);
-      setEditing(false);
-      setPhotoFile(null);
-    } catch (err) {
-      console.error(err);
-    }
-  };
+   const handleSave = async () => {
+     setLoading(true);
+     try {
+       let photo_url = form.photo_url;
+       if (photoFile) {
+         const dataUrl = await new Promise((res, rej) => {
+           const reader = new FileReader();
+           reader.onload = () => res(reader.result);
+           reader.onerror = rej;
+           reader.readAsDataURL(photoFile);
+         });
+         const uploadRes = await uploadAvatar(photoFile.name, dataUrl);
+         photo_url = uploadRes.url;
+       }
+       const updated = await updateProfile({
+         name: form.name,
+         phone: form.phone,
+         address: form.address,
+         photo_url,
+       });
+       updateUser(updated);
+       setEditing(false);
+       setPhotoFile(null);
+     } catch (err) {
+       console.error(err);
+     } finally {
+       setLoading(false);
+     }
+   };
 
   return (
     <div className="max-w-3xl mx-auto space-y-8 fade-in">
@@ -257,29 +266,38 @@ const Profile = () => {
               />
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-3 mt-4">
-              <button
-                onClick={handleSave}
-                className="w-full sm:w-auto px-4 py-2 bg-linear-to-r from-purple-600 to-indigo-600 text-white rounded-xl hover:opacity-95 transition-opacity"
-              >
-                Сохранить
-              </button>
-              <button
-                onClick={() => {
-                  setEditing(false);
-                  setPhotoFile(null);
-                  setForm({
-                    name: user.name || "",
-                    phone: user.phone || "",
-                    address: user.address || "",
-                    photo_url: user.photo_url || "",
-                  });
-                }}
-                className="w-full sm:w-auto px-4 py-2 bg-white border rounded-xl"
-              >
-                Отменить
-              </button>
-            </div>
+             <div className="flex flex-col sm:flex-row gap-3 mt-4">
+               <button
+                 onClick={handleSave}
+                 disabled={loading}
+                 className="w-full sm:w-auto px-4 py-2 bg-linear-to-r from-purple-600 to-indigo-600 text-white rounded-xl hover:opacity-95 transition-opacity disabled:opacity-70 flex items-center justify-center gap-2"
+               >
+                 {loading ? (
+                   <>
+                     <Spinner className="w-4 h-4" />
+                     Сохранение...
+                   </>
+                 ) : (
+                   "Сохранить"
+                 )}
+               </button>
+               <button
+                 onClick={() => {
+                   setEditing(false);
+                   setPhotoFile(null);
+                   setForm({
+                     name: user.name || "",
+                     phone: user.phone || "",
+                     address: user.address || "",
+                     photo_url: user.photo_url || "",
+                   });
+                 }}
+                 disabled={loading}
+                 className="w-full sm:w-auto px-4 py-2 bg-white border rounded-xl disabled:opacity-70"
+               >
+                 Отменить
+               </button>
+             </div>
           </div>
         )}
       </div>
@@ -299,10 +317,10 @@ const Profile = () => {
               >
                 <div className="min-w-0">
                   <p className="font-medium text-gray-800 dark:text-gray-100 truncate">
-                    {b.bookTitle}
+                    {b.book_title}
                   </p>
                   <p className="text-sm text-gray-500">
-                    до {new Date(b.expires).toLocaleDateString()}
+                    до {formatDate(b.expires_at)}
                   </p>
                 </div>
                 <button
@@ -325,7 +343,7 @@ const Profile = () => {
           <ul className="space-y-3">
             {history.map((b) => (
               <li key={b.id} className="p-3 bg-white/40 rounded-xl">
-                <p className="font-medium">{b.bookTitle}</p>
+                <p className="font-medium">{b.book_title}</p>
                 <p className="text-sm text-gray-500">{b.status}</p>
               </li>
             ))}

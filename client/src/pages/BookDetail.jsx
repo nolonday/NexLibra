@@ -8,10 +8,10 @@ const BookDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+
   const [book, setBook] = useState(null);
-  const [mainImage, setMainImage] = useState(null);
   const [message, setMessage] = useState("");
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -28,148 +28,104 @@ const BookDetail = () => {
       .catch(() => navigate("/404"));
   }, [id, navigate]);
 
-  useEffect(() => {
-    if (book) {
-      const first =
-        (book.gallery_urls && book.gallery_urls[0]) || book.cover_url || null;
-      setMainImage(first);
-    }
-  }, [book]);
-
-  useEffect(() => {
-    if (user)
-      setForm((f) => ({
-        ...f,
-        name: user.name || "",
-        email: user.email || "",
-      }));
-  }, [user]);
-
-  const handleReserve = async () => {
+  const submit = async (e) => {
+    e.preventDefault();
+    if (!user || !book) return;
+    setSending(true);
     try {
-      await createReservation(user.id, book.id);
-      setMessage("Книга успешно забронирована");
-      setBook((prev) => ({ ...prev, status: "Забронирована" }));
+      await createReservation(user.id, book.id, { ...form });
+      setMessage("Отправлено!");
+      setTimeout(() => {
+        setIsBookingOpen(false);
+        setMessage("");
+        setBook((prev) => ({ ...prev, status: "Забронирована" }));
+      }, 1200);
     } catch (err) {
-      setMessage(err.message || "Ошибка бронирования");
+      setMessage(err?.message || "Ошибка");
+    } finally {
+      setSending(false);
     }
   };
-
-  if (!book) return <div className="text-center mt-10">Загрузка...</div>;
 
   return (
     <div className="max-w-4xl mx-auto glass-strong rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 fade-in">
       <div className="mb-4 text-sm text-gray-500 overflow-hidden">
         <Link to="/">Главная</Link> / <Link to="/catalog">Каталог</Link> /{" "}
         <span className="text-gray-800 dark:text-gray-100 truncate inline-block max-w-[50vw] sm:max-w-none align-bottom">
-          {book.title}
+          {book?.title}
         </span>
       </div>
+
       <div className="grid md:grid-cols-3 gap-6 md:gap-8">
         <div className="md:col-span-1">
           <div className="rounded-2xl bg-linear-to-br from-purple-100 to-blue-100 flex flex-col items-center justify-center overflow-hidden">
             <div className="w-full aspect-2/3 flex items-center justify-center bg-white/30">
-              {mainImage ? (
+              {book?.cover_url ? (
                 <img
-                  src={mainImage}
                   alt={book.title}
                   className="h-full w-full object-contain"
-                  onError={(e) => {
-                    e.currentTarget.src = "/placeholder-book.png";
-                  }}
+                  src={book.cover_url}
+                  onError={(e) =>
+                    (e.currentTarget.src = "/placeholder-book.png")
+                  }
                 />
               ) : (
                 <span className="text-8xl">📖</span>
               )}
             </div>
-
-            {/* Thumbnails */}
-            {book.gallery_urls && book.gallery_urls.length > 1 && (
-              <div className="mt-3 flex gap-2 overflow-x-auto w-full px-2">
-                {book.gallery_urls.map((url, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setMainImage(url)}
-                    className={`shrink-0 w-20 h-28 rounded-md overflow-hidden border ${
-                      mainImage === url
-                        ? "ring-2 ring-purple-400"
-                        : "border-transparent"
-                    }`}
-                  >
-                    <img
-                      src={url}
-                      alt={`${book.title} ${idx}`}
-                      className="w-full h-full object-cover"
-                      onError={(e) =>
-                        (e.currentTarget.src = "/placeholder-book.png")
-                      }
-                    />
-                  </button>
-                ))}
+            {book && (
+              <div className="mt-4">
+                <span
+                  className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${book.status === "В наличии" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}
+                >
+                  {book.status}
+                </span>
               </div>
             )}
           </div>
-          <div className="mt-4">
-            <span
-              className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
-                book.status === "В наличии"
-                  ? "bg-green-100 text-green-700"
-                  : "bg-yellow-100 text-yellow-700"
-              }`}
-            >
-              {book.status}
-            </span>
-          </div>
         </div>
+
         <div className="md:col-span-2 space-y-4">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-gray-100">
-            {book.title}
+            {book?.title}
           </h1>
           <p className="text-lg sm:text-xl text-purple-600 font-medium">
-            {book.author}
+            {book?.author}
           </p>
-          <p className="text-sm sm:text-base text-gray-500 break-words">
-            {book.genre} · {book.year} · ISBN: {book.isbn}
+          <p className="text-sm sm:text-base text-gray-500">
+            {book?.genre} · {book?.year} · ISBN: {book?.isbn}
           </p>
           <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 leading-relaxed">
-            {book.description}
+            {book?.description}
           </p>
-          {user && book.status === "В наличии" && (
+
+          {user && book?.status === "В наличии" && (
             <>
               <button
-                onClick={() => setIsModalOpen(true)}
+                onClick={() => {
+                  setForm((f) => ({
+                    ...f,
+                    name: user?.name || "",
+                    email: user?.email || "",
+                  }));
+                  setIsBookingOpen(true);
+                }}
                 className="mt-4 w-full sm:w-auto px-8 py-3 bg-linear-to-r from-purple-600 to-indigo-600 text-white rounded-full hover:opacity-95 transition-opacity shadow-lg shadow-purple-200"
               >
                 Забронировать
               </button>
+
               <Modal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                title={`Бронирование — ${book.title}`}
+                isOpen={isBookingOpen}
+                onClose={() => setIsBookingOpen(false)}
+                title={`Бронирование — ${book?.title}`}
               >
-                <form
-                  onSubmit={async (e) => {
-                    e.preventDefault();
-                    setSending(true);
-                    try {
-                      await createReservation(user.id, book.id);
-                      setMessage("Отправлено!");
-                      setTimeout(() => {
-                        setIsModalOpen(false);
-                        setMessage("");
-                        setBook((prev) => ({
-                          ...prev,
-                          status: "Забронирована",
-                        }));
-                      }, 1500);
-                    } catch (err) {
-                      setMessage(err.message || "Ошибка");
-                    } finally {
-                      setSending(false);
-                    }
-                  }}
-                  className="space-y-3"
-                >
+                {message && (
+                  <div className="text-sm text-purple-700 text-center">
+                    {message}
+                  </div>
+                )}
+                <form onSubmit={submit} className="space-y-3">
                   <div>
                     <label className="text-sm">Имя</label>
                     <input
@@ -236,7 +192,7 @@ const BookDetail = () => {
                   <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-2 pt-2">
                     <button
                       type="button"
-                      onClick={() => setIsModalOpen(false)}
+                      onClick={() => setIsBookingOpen(false)}
                       className="w-full sm:w-auto px-4 py-2.5 bg-white border rounded-xl"
                     >
                       Отмена
@@ -256,7 +212,9 @@ const BookDetail = () => {
               </Modal>
             </>
           )}
+
           {message && <p className="text-sm text-purple-700 mt-2">{message}</p>}
+
           <div className="mt-6 p-4 glass rounded-xl flex flex-col sm:flex-row items-start sm:items-center gap-3">
             <div className="w-12 h-12 rounded-lg bg-linear-to-br from-purple-100 to-indigo-100 flex items-center justify-center text-2xl shrink-0">
               ❓
@@ -265,7 +223,7 @@ const BookDetail = () => {
               <div className="font-medium text-gray-800 dark:text-gray-100">
                 Нужна помощь?
               </div>
-              <div className="text-sm text-gray-600 dark:text-gray-300 break-words">
+              <div className="text-sm text-gray-600 dark:text-gray-300">
                 Тел: +7 123 456-78-90 · info@nexlibra.local
               </div>
             </div>

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { useAuth } from "../hooks/useAuth";
+import Spinner from "../components/Spinner";
 
 const Login = () => {
   const { login } = useAuth();
@@ -8,14 +9,18 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
       await login(email, password);
       navigate("/profile");
-    } catch (err) {
+    } catch {
       setError("Неверный email или пароль");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -48,9 +53,17 @@ const Login = () => {
         />
         <button
           type="submit"
-          className="w-full py-3 bg-linear-to-r from-purple-600 to-indigo-600 text-white rounded-xl hover:opacity-95 transition-opacity shadow-md"
+          disabled={loading}
+          className="w-full py-3 bg-linear-to-r from-purple-600 to-indigo-600 text-white rounded-xl hover:opacity-95 transition-opacity shadow-md disabled:opacity-70 flex items-center justify-center gap-2"
         >
-          Войти
+          {loading ? (
+            <>
+              <Spinner className="w-5 h-5" />
+              Вход...
+            </>
+          ) : (
+            "Войти"
+          )}
         </button>
       </form>
       <p className="mt-4 text-center text-gray-500 text-sm">

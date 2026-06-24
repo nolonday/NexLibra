@@ -10,9 +10,11 @@ const Dashboard = () => {
     users: 0,
     activeReservations: 0,
   });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const load = async () => {
+      setLoading(true);
       const [books, reservations, users] = await Promise.all([
         getBooks({ limit: 999 }),
         getAllReservations(),
@@ -24,6 +26,7 @@ const Dashboard = () => {
         activeReservations: reservations.filter((r) => r.status === "Активно")
           .length,
       });
+      setLoading(false);
     };
     load();
   }, [isAdmin]);
@@ -38,23 +41,35 @@ const Dashboard = () => {
       >
         <div className="bg-white dark:bg-gray-800/50 rounded-xl p-4 sm:p-6 shadow-sm border border-gray-100 dark:border-gray-700">
           <p className="text-gray-500 text-sm mb-2">Книг в каталоге</p>
-          <p className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100">
-            {stats.books}
-          </p>
+          {loading ? (
+            <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded w-24 animate-pulse" />
+          ) : (
+            <p className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100">
+              {stats.books}
+            </p>
+          )}
         </div>
         {isAdmin && (
           <div className="bg-white dark:bg-gray-800/50 rounded-xl p-4 sm:p-6 shadow-sm border border-gray-100 dark:border-gray-700">
             <p className="text-gray-500 text-sm mb-2">Пользователей</p>
-            <p className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100">
-              {stats.users}
-            </p>
+            {loading ? (
+              <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded w-24 animate-pulse" />
+            ) : (
+              <p className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100">
+                {stats.users}
+              </p>
+            )}
           </div>
         )}
         <div className="bg-white dark:bg-gray-800/50 rounded-xl p-4 sm:p-6 shadow-sm border border-gray-100 dark:border-gray-700 sm:col-span-2 lg:col-span-1">
           <p className="text-gray-500 text-sm mb-2">Активных бронирований</p>
-          <p className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100">
-            {stats.activeReservations}
-          </p>
+          {loading ? (
+            <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded w-24 animate-pulse" />
+          ) : (
+            <p className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100">
+              {stats.activeReservations}
+            </p>
+          )}
         </div>
       </div>
     </div>

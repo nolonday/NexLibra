@@ -4,12 +4,13 @@ import BookCard from "../components/BookCard";
 
 const Home = () => {
   const [popular, setPopular] = useState([]);
+  const [loadingPopular, setLoadingPopular] = useState(true);
   const carouselRef = useRef(null);
 
   useEffect(() => {
-    getBooks({ sort: "popular", limit: 4 }).then((res) =>
-      setPopular(res.books),
-    );
+    getBooks({ sort: "popular", limit: 4 })
+      .then((res) => setPopular(res.books))
+      .finally(() => setLoadingPopular(false));
   }, []);
 
   return (
@@ -86,11 +87,24 @@ const Home = () => {
           ref={carouselRef}
           className="flex gap-4 overflow-x-auto pb-3 scroll-smooth hide-scrollbar"
         >
-          {popular.map((book) => (
-            <div key={book.id} className="slide-item">
-              <BookCard book={book} />
-            </div>
-          ))}
+          {loadingPopular
+            ? [1, 2, 3, 4].map((i) => (
+                <div key={i} className="slide-item w-56 sm:w-64">
+                  <div className="glass rounded-2xl overflow-hidden flex flex-col animate-pulse h-80">
+                    <div className="bg-gray-200 dark:bg-gray-700 h-48 sm:h-56 md:h-64 w-full" />
+                    <div className="p-4 space-y-2">
+                      <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-3/4" />
+                      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2" />
+                      <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mt-2" />
+                    </div>
+                  </div>
+                </div>
+              ))
+            : popular.map((book) => (
+                <div key={book.id} className="slide-item">
+                  <BookCard book={book} />
+                </div>
+              ))}
         </div>
       </section>
 

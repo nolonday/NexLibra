@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { useNavigate } from "react-router";
 import { register, uploadAvatar } from "../api/localApi";
 import { useAuth } from "../hooks/useAuth";
+import Spinner from "../components/Spinner";
 
 const Register = () => {
   const { login } = useAuth();
@@ -16,9 +17,11 @@ const Register = () => {
   const inputRef = useRef(null);
   const [dragOver, setDragOver] = useState(false);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
       let avatarUrl = photoUrl;
       if (photoFile) {
@@ -37,6 +40,8 @@ const Register = () => {
       navigate("/profile");
     } catch (err) {
       setError(err.message || "Ошибка регистрации");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -189,9 +194,17 @@ const Register = () => {
         </div>
         <button
           type="submit"
-          className="w-full py-3 bg-linear-to-r from-purple-600 to-indigo-600 text-white rounded-xl hover:opacity-95 transition-opacity shadow-md"
+          disabled={loading}
+          className="w-full py-3 bg-linear-to-r from-purple-600 to-indigo-600 text-white rounded-xl hover:opacity-95 transition-opacity shadow-md disabled:opacity-70 flex items-center justify-center gap-2"
         >
-          Зарегистрироваться
+          {loading ? (
+            <>
+              <Spinner className="w-5 h-5" />
+              Регистрация...
+            </>
+          ) : (
+            "Зарегистрироваться"
+          )}
         </button>
       </form>
     </div>

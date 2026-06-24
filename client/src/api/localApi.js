@@ -26,7 +26,16 @@ export const register = async (
 
 export const uploadAvatar = async (filename, dataUrl) => {
   const { data } = await api.post("/auth/upload", { filename, data: dataUrl });
-  return data; // { url }
+  return data;
+};
+
+export const uploadCover = async (file) => {
+  const form = new FormData();
+  form.append("file", file);
+  const { data } = await api.post("/covers", form, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return data;
 };
 
 export const updateProfile = async (updates) => {
@@ -94,6 +103,15 @@ export const createBook = async (payload) => {
   const { data } = await api.post(`/admin/books`, payload);
   return data;
 };
+export const deleteBook = async (id) => {
+  const { data } = await api.delete(`/admin/books/${id}`);
+  return data;
+};
+
+export const adminCreateReservation = async (userId, bookId) => {
+  const { data } = await api.post(`/admin/reservations`, { userId, bookId });
+  return data;
+};
 
 export const getAllUsers = async () => {
   const { data } = await api.get("/admin/users");
@@ -109,6 +127,11 @@ export const updateUserRole = async (userId, newRole) => {
 
 export const adminUpdateUser = async (userId, updates) => {
   const { data } = await api.put(`/admin/users/${userId}`, updates);
+  return data;
+};
+
+export const deleteUser = async (userId) => {
+  const { data } = await api.delete(`/admin/users/${userId}`);
   return data;
 };
 

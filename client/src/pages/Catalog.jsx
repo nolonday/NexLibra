@@ -4,10 +4,12 @@ import BookCard from "../components/BookCard";
 import SearchBar from "../components/SearchBar";
 import FilterModal from "../components/FilterModal";
 import Pagination from "../components/Pagination";
+import Spinner from "../components/Spinner";
 import api from "../api/axios";
 
 const Catalog = () => {
   const [books, setBooks] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
@@ -23,30 +25,36 @@ const Catalog = () => {
     max: new Date().getFullYear(),
   });
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [reloadSignal, setReloadSignal] = useState(0);
 
   useEffect(() => {
     let mounted = true;
     const load = async () => {
-      const res = await getBooks({
-        page,
-        search,
-        genre,
-        limit: 16,
-        sort,
-        yearFrom,
-        yearTo,
-        status,
-      });
-      if (!mounted) return;
-      setBooks(res.books);
-      setTotalPages(res.totalPages);
-      setTotalItems(res.totalItems || 0);
+      setLoading(true);
+      try {
+        const res = await getBooks({
+          page,
+          search,
+          genre,
+          limit: 16,
+          sort,
+          yearFrom,
+          yearTo,
+          status,
+        });
+        if (!mounted) return;
+        setBooks(res.books);
+        setTotalPages(res.totalPages);
+        setTotalItems(res.totalItems || 0);
+      } finally {
+        if (mounted) setLoading(false);
+      }
     };
     load();
     return () => {
       mounted = false;
     };
-  }, [page, search, genre, sort, yearFrom, yearTo, status]);
+  }, [page, search, genre, sort, yearFrom, yearTo, status, reloadSignal]);
 
   useEffect(() => {
     getGenres().then(setGenresList);
@@ -54,11 +62,28 @@ const Catalog = () => {
       const min = r.data.minYear;
       const max = r.data.maxYear;
       setYearsRange({ min, max });
-      const defaultFrom = Math.max(min || 1900, 1866);
-      const defaultTo = Math.min(max || new Date().getFullYear(), 1966);
+      const defaultFrom = min || 1900;
+      const defaultTo = max || new Date().getFullYear();
       setYearFrom(defaultFrom);
       setYearTo(defaultTo);
     });
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !("BroadcastChannel" in window))
+      return;
+    const bc = new BroadcastChannel("nexlibra-books");
+    const handler = (e) => {
+      if (e.data === "books-updated") {
+        setPage(1);
+        setReloadSignal((s) => s + 1);
+      }
+    };
+    bc.addEventListener("message", handler);
+    return () => {
+      bc.removeEventListener("message", handler);
+      bc.close();
+    };
   }, []);
 
   const resetFilters = () => {
@@ -89,7 +114,14 @@ const Catalog = () => {
           Каталог книг
         </h1>
         <div className="text-sm text-gray-500 dark:text-gray-300 shrink-0">
-          Найдено {totalItems} книг
+          {loading ? (
+            <div className="flex items-center gap-2">
+              <Spinner className="w-4 h-4 text-purple-600" />
+              <span>Загрузка каталога...</span>
+            </div>
+          ) : (
+            `Найдено ${totalItems} книг`
+          )}
         </div>
       </div>
 
@@ -144,9 +176,20 @@ const Catalog = () => {
 
           <div className="flex-1">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 items-stretch">
-              {books.map((book) => (
-                <BookCard key={book.id} book={book} />
-              ))}
+              {loading
+                ? Array.from({ length: 8 }).map((_, i) => (
+                    <div key={i} className="animate-pulse">
+                      <div className="glass rounded-2xl overflow-hidden flex flex-col h-full">
+                        <div className="bg-gray-200 dark:bg-gray-700 h-48 sm:h-56 md:h-64 w-full" />
+                        <div className="p-4 space-y-2">
+                          <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-3/4" />
+                          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2" />
+                          <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mt-2" />
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                : books.map((book) => <BookCard key={book.id} book={book} />)}
             </div>
 
             {totalPages > 1 && (
